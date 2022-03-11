@@ -33,7 +33,7 @@ namespace LittleBit.Modules.UI
         {
             //InitPools();
         }
-
+        
         private void LoadConfigs()
         {
             _layoutStylesConfigs = new Dictionary<Type, Dictionary<string, ILayout>>();
