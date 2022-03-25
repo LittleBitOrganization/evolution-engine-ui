@@ -1,10 +1,10 @@
 {
   "name": "com.littlebitgames.uimodule",
   "displayName": "UI Module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "unity": "2021.1",
   "unityRelease": "6f1",
-  "description": "This module provides you with Ui ",
+  "description": "This module provides you with Ui",
   "category": "Module",
   "author": {
     "name": "LittleBitGames"

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using LittleBit.Modules.CoreModule.AssetManagement;
 using LittleBit.Modules.CoreModule.MonoInterfaces;
+using QFSW.MOP2;
 using UnityEngine;
 
 namespace LittleBit.Modules.UI
@@ -12,34 +13,37 @@ namespace LittleBit.Modules.UI
         private readonly ICreator _creator;
         private AssetProvider _assetProvider;
 
-        private Dictionary<Type, Dictionary<string, ILayout>> _layoutStylesConfigs;
-        //private Dictionary<Type, Dictionary<string, ObjectPool>> _pooledLayouts;
+        private Dictionary<Type, Dictionary<string, ILayout>> _layoutContainer;
+        private Dictionary<Type, Dictionary<string, ObjectPool>> _pooledLayouts;
 
         private const string PathToStylesConfigs = "Configs/Layout Styles Configs";
 
         public LayoutFactory(ICreator creator, AssetProvider assetProvider)
         {
-            _layoutStylesConfigs = new Dictionary<Type, Dictionary<string, ILayout>>();
-            //_pooledLayouts = new Dictionary<Type, Dictionary<string, ObjectPool>>();
+            _layoutContainer = new Dictionary<Type, Dictionary<string, ILayout>>();
+            _pooledLayouts = new Dictionary<Type, Dictionary<string, ObjectPool>>();
 
 
             _creator = creator;
             _assetProvider = assetProvider;
 
             LoadConfigs();
+            InitPools();
         }
 
         public void Initialize()
         {
-            //InitPools();
+            InitPools();
         }
-        
+
+        private LayoutStylesConfig[] _configs;
+
         private void LoadConfigs()
         {
-            _layoutStylesConfigs = new Dictionary<Type, Dictionary<string, ILayout>>();
-            var configs = _assetProvider.GetAssets<LayoutStylesConfig>(PathToStylesConfigs);
+            _layoutContainer = new Dictionary<Type, Dictionary<string, ILayout>>();
+            _configs = _assetProvider.GetAssets<LayoutStylesConfig>(PathToStylesConfigs);
 
-            foreach (var config in configs)
+            foreach (var config in _configs)
             {
                 string fileName = config.name;
                 try
@@ -50,23 +54,23 @@ namespace LittleBit.Modules.UI
                         Type type = layout.GetType();
                         string styleName = style.name;
 
-                        if (_layoutStylesConfigs.ContainsKey(type) && _layoutStylesConfigs[type].ContainsKey(styleName))
+                        if (_layoutContainer.ContainsKey(type) && _layoutContainer[type].ContainsKey(styleName))
                         {
                             string errorMessageHead = "Error! Style repeats!:\n";
                             string errorMessage = "StyleFile: " + fileName + " StyleName: " + styleName +
                                                   "GameObject: " +
                                                   layout.GetGameObject().name + "\n";
-                            string errorMessage2 = _layoutStylesConfigs[type][styleName].GetGameObject().name;
+                            string errorMessage2 = _layoutContainer[type][styleName].GetGameObject().name;
                             throw new Exception(errorMessageHead + errorMessage + errorMessage2);
                         }
 
 
-                        if (!_layoutStylesConfigs.ContainsKey(type))
+                        if (!_layoutContainer.ContainsKey(type))
                         {
-                            _layoutStylesConfigs.Add(type, new Dictionary<string, ILayout>());
+                            _layoutContainer.Add(type, new Dictionary<string, ILayout>());
                         }
 
-                        _layoutStylesConfigs[type][style.name] = style.Layout;
+                        _layoutContainer[type][style.name] = style.Layout;
                     }
                 }
                 catch (Exception e)
@@ -79,41 +83,64 @@ namespace LittleBit.Modules.UI
         }
 
 
-        // private void InitPools()
-        // {
-        //
-        //     foreach (var layoutKvp in _layoutStylesConfigs)
-        //     {
-        //         if (!layoutKvp.Value.Styles.Any(x => x.poolSize > 0)) continue;
-        //
-        //         var layoutType = layoutKvp.Key;
-        //
-        //         //_pooledLayouts.Add(layoutType, new Dictionary<string, ObjectPool>());
-        //
-        //         foreach (var style in layoutKvp.Value.Styles)
-        //         {
-        //             var template = Resources.Load<GameObject>(style.prefabReference.PrefabPathInResources);
-        //             var objectPool = ObjectPool.Create(template,
-        //                 layoutKvp.Key.Name + " " + style.name, style.poolSize, style.poolSize);
-        //
-        //             //objectPool.container = _diContainer;
-        //             
-        //             objectPool.Initialize();
-        //             
-        //             foreach (var layout in objectPool.ObjectParent.GetComponentsInChildren<Layout>(true))
-        //             {
-        //                 layout.OnStartDestroy += delegate
-        //                 {
-        //                     OnPooledLayoutDestroy(layoutKvp.Key, style.name, layout.GetGameObject());
-        //                 };
-        //
-        //                 layout.SetDestroyType(DestroyType.Deactivate);
-        //             }
-        //
-        //             //_pooledLayouts[layoutType].Add(style.name, objectPool);
-        //         }
-        //     }
-        // }
+        private void InitPools()
+        {
+            foreach (var config in _configs)
+            {
+                string fileName = config.name;
+                try
+                {
+                    foreach (var style in config.Styles)
+                    {
+                        int poolSize = style.poolSize;
+                        if (poolSize > 0)
+                        {
+                            ILayout layout = style.Layout;
+                            Type type = layout.GetType();
+                            string styleName = style.name;
+                            
+                            if (_pooledLayouts.ContainsKey(type) && _pooledLayouts[type].ContainsKey(styleName))
+                            {
+                                string errorMessageHead = "Error! Style repeats!:\n";
+                                string errorMessage = "StyleFile: " + fileName + " StyleName: " + styleName +
+                                                      "GameObject: " +
+                                                      layout.GetGameObject().name + "\n";
+                                string errorMessage2 = _pooledLayouts[type][styleName].GetObject().name;
+                                throw new Exception(errorMessageHead + errorMessage + errorMessage2);
+                            }
+                            
+                            if (!_pooledLayouts.ContainsKey(type))
+                            {
+                                _pooledLayouts.Add(type, new Dictionary<string, ObjectPool>());
+                            }
+
+                            var objectPool = ObjectPool.Create(style.Layout.GetGameObject(),
+                                style.Layout.GetGameObject().name, poolSize);
+                            objectPool.Initialize();
+                            
+                            foreach (var layoutPooled in objectPool.ObjectParent.GetComponentsInChildren<Layout>(true))
+                            {
+                                layoutPooled.OnStartDestroy += delegate
+                                {
+                                    OnPooledLayoutDestroy(layoutPooled.GetType(), styleName, layoutPooled.GetGameObject());
+                                };
+                            
+                                layoutPooled.SetDestroyType(DestroyType.Deactivate);
+                            }
+                            
+                            _pooledLayouts[type].Add(styleName, objectPool);
+
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                    Debug.LogError(config.name);
+                    throw;
+                }
+            }
+        }
 
         public T Create<T>() where T : ILayout
         {
@@ -134,26 +161,30 @@ namespace LittleBit.Modules.UI
                 return default;
             }
 
-            var prefabLayout = _layoutStylesConfigs[typeof(T)][styleName];
+            Type type = typeof(T);
 
-            //var isPooledLayout = _pooledLayouts.ContainsKey(type);
-
-            // var layout = isPooledLayout
-            //     ? _pooledLayouts[type][styleName].GetObject().GetComponent<T>()
-            //     : _diContainer.InstantiatePrefabResource(layoutPathInResources).GetComponent<T>();
+            var prefabLayout = _layoutContainer[type][styleName];
+            var isPooledLayout = _pooledLayouts.ContainsKey(type);
 
 
-            return _creator.InstantiatePrefab(prefabLayout.GetGameObject()).GetComponent<T>();
+            if (isPooledLayout)
+            {
+                return _pooledLayouts[type][styleName].GetObject().GetComponent<T>();
+            }
+            else
+            {
+                return _creator.InstantiatePrefab(prefabLayout.GetGameObject()).GetComponent<T>();
+            }
         }
 
-        /*private void OnPooledLayoutDestroy(Type type, string styleName, GameObject layout)
+        private void OnPooledLayoutDestroy(Type type, string styleName, GameObject layout)
         {
             _pooledLayouts[type][styleName].Release(layout);
-        }*/
+        }
 
         private Dictionary<string, ILayout> GetConfigByType<T>()
         {
-            return _layoutStylesConfigs[typeof(T)];
+            return _layoutContainer[typeof(T)];
         }
     }
 }
