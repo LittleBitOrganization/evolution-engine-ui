@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using LittleBit.Modules.CoreModule.AssetManagement;
 using LittleBit.Modules.CoreModule.MonoInterfaces;
-using QFSW.MOP2;
+using LittleBit.Modules.Pool;
 using UnityEngine;
+
 
 namespace LittleBit.Modules.UI
 {
     public class LayoutFactory
     {
         private readonly ICreator _creator;
+        private readonly IPoolService _poolService;
         private AssetProvider _assetProvider;
 
         private Dictionary<Type, Dictionary<string, ILayout>> _layoutContainer;
@@ -18,13 +20,14 @@ namespace LittleBit.Modules.UI
 
         private const string PathToStylesConfigs = "Configs/Layout Styles Configs";
 
-        public LayoutFactory(ICreator creator, AssetProvider assetProvider)
+        public LayoutFactory(ICreator creator, IPoolService poolService, AssetProvider assetProvider)
         {
             _layoutContainer = new Dictionary<Type, Dictionary<string, ILayout>>();
             _pooledLayouts = new Dictionary<Type, Dictionary<string, ObjectPool>>();
 
 
             _creator = creator;
+            _poolService = poolService;
             _assetProvider = assetProvider;
 
             LoadConfigs();
@@ -105,7 +108,7 @@ namespace LittleBit.Modules.UI
                                 string errorMessage = "StyleFile: " + fileName + " StyleName: " + styleName +
                                                       "GameObject: " +
                                                       layout.GetGameObject().name + "\n";
-                                string errorMessage2 = _pooledLayouts[type][styleName].GetObject().name;
+                                string errorMessage2 = _pooledLayouts[type][styleName].GetGameObject().name;
                                 throw new Exception(errorMessageHead + errorMessage + errorMessage2);
                             }
                             
@@ -114,9 +117,9 @@ namespace LittleBit.Modules.UI
                                 _pooledLayouts.Add(type, new Dictionary<string, ObjectPool>());
                             }
 
-                            var objectPool = ObjectPool.Create(style.Layout.GetGameObject(),
+                            var objectPool = _poolService.CreateAndInitialize(style.Layout.GetGameObject(),
                                 style.Layout.GetGameObject().name, poolSize);
-                            objectPool.Initialize();
+                            
                             
                             foreach (var layoutPooled in objectPool.ObjectParent.GetComponentsInChildren<Layout>(true))
                             {
@@ -169,7 +172,7 @@ namespace LittleBit.Modules.UI
 
             if (isPooledLayout)
             {
-                return _pooledLayouts[type][styleName].GetObject().GetComponent<T>();
+                return _pooledLayouts[type][styleName].GetGameObject().GetComponent<T>();
             }
             else
             {
