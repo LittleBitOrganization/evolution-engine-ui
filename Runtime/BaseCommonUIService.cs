@@ -4,11 +4,11 @@ using UnityEngine.Events;
 
 namespace LittleBit.Modules.UI
 {
-    public abstract partial class CommonUIService : IService
+    public abstract partial class BaseCommonUIService : IService
     {
         protected Dictionary<int,List<CommonWindow>> _windows;
 
-        public CommonUIService()
+        public BaseCommonUIService()
         {
             _windows = new Dictionary<int, List<CommonWindow>>();
         }
@@ -20,6 +20,7 @@ namespace LittleBit.Modules.UI
                 window.Hide();
             }
         }
+        
         public void HideAllWindows()
         {
             foreach (var windowLayer in _windows)
@@ -35,6 +36,7 @@ namespace LittleBit.Modules.UI
             CommonWindow window = _windows[layer].Find(x => x.GetType() == typeof(T));
             OpenWindow(window,context, layer);
         }
+        
         protected void InitShop(CommonWindow shop, int layer, UnityAction onOpen ,UnityAction onClose)
         {
             if (!_windows.ContainsKey(layer))
@@ -72,10 +74,6 @@ namespace LittleBit.Modules.UI
                 window.Hide();
                 window.OpenShop(context);
             }
-        }
-        protected virtual void SubscribeToRaycastService(IRaycastService raycastService)
-        {
-            raycastService.AddOnRaycastHitListener(OnRaycastHit);
         }
         
         private void CloseOpeningWindowExceptWindow(CommonWindow currentShop, int layer)
