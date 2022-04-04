@@ -31,7 +31,7 @@ namespace LittleBit.Modules.UI
                 }
             }
         }
-        public void OpenWindow<T>(WindowContext context, int layer) where T : CommonWindow
+        public void OpenWindow<T>(WindowContext context, int layer = 0) where T : CommonWindow
         {
             CommonWindow window = _windows[layer].Find(x => x.GetType() == typeof(T));
             OpenWindow(window,context, layer);
@@ -59,7 +59,7 @@ namespace LittleBit.Modules.UI
                 if(!shopTrigger.Interactable) return;
             }
         }
-        protected virtual void OpenWindow(CommonWindow window, WindowContext context, int layer)
+        protected virtual void OpenWindow(CommonWindow window, WindowContext context, int layer = 0)
         {
             if (window.WindowTrigger == context.WindowTrigger && context.WindowTrigger != null) return;
 
