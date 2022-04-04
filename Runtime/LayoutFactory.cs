@@ -182,7 +182,8 @@ namespace LittleBit.Modules.UI
 
         private void OnPooledLayoutDestroy(Type type, string styleName, GameObject layout)
         {
-            _pooledLayouts[type][styleName].Release(layout);
+            if(_pooledLayouts.ContainsKey(type) && _pooledLayouts[type].ContainsKey(styleName))
+                _pooledLayouts[type][styleName].Release(layout);
         }
 
         private Dictionary<string, ILayout> GetConfigByType<T>()
