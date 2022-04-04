@@ -51,7 +51,7 @@ namespace LittleBit.Modules.UI
         }
 
         protected abstract void OnHiddenWindow();
-        
+        protected abstract void OnOpenWindow();
         protected virtual void OnRaycastHit(GameObject go)
         {
             if (go.TryGetComponent(out ShopTrigger shopTrigger))
@@ -74,6 +74,8 @@ namespace LittleBit.Modules.UI
                 window.Hide();
                 window.OpenShop(context);
             }
+
+            OnOpenWindow();
         }
         
         private void CloseOpeningWindowExceptWindow(CommonWindow currentShop, int layer)
