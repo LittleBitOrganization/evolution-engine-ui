@@ -17,7 +17,7 @@ namespace LittleBit.Modules.UI
         {
             foreach (var window in _windows[layer])
             {
-                window.Close();
+                CloseWindow(window);
             }
         }
         
@@ -49,9 +49,10 @@ namespace LittleBit.Modules.UI
             shop.OnClose.AddListener(onClose);   
             shop.OnClose.AddListener(OnCloseWindow);
         }
-
+        
         protected abstract void OnCloseWindow();
-        protected abstract void OnOpenWindow();
+        protected abstract void OnOpenWindow(CommonWindow commonWindow);
+
         protected virtual void OnRaycastHit(GameObject go)
         {
             if (go.TryGetComponent(out ShopTrigger shopTrigger))
@@ -74,8 +75,7 @@ namespace LittleBit.Modules.UI
                 window.Close();
                 window.OpenShop(context);
             }
-
-            OnOpenWindow();
+            OnOpenWindow(window);
         }
         
         private void CloseOpeningWindowExceptWindow(CommonWindow currentShop, int layer)
