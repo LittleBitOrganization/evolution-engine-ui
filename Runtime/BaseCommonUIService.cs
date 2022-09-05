@@ -19,6 +19,8 @@ namespace LittleBit.Modules.UI
             {
                 CloseWindow(window);
             }
+
+            OnCloseWindowsInLayer(layer);
         }
         
         public void CloseAllWindows()
@@ -30,6 +32,8 @@ namespace LittleBit.Modules.UI
                     CloseWindow(window);
                 }
             }
+
+            OnCloseAllWindows();
         }
         public void OpenWindow<T>(WindowContext context, int layer = 0) where T : CommonWindow
         {
@@ -47,11 +51,16 @@ namespace LittleBit.Modules.UI
             
             shop.OnOpen.AddListener(onOpen);
             shop.OnClose.AddListener(onClose);   
-            shop.OnClose.AddListener(OnCloseWindow);
+            shop.OnClose.AddListener(()=>
+            {
+                OnCloseWindow(layer);
+            });
         }
         
-        protected abstract void OnCloseWindow();
-        protected abstract void OnOpenWindow(CommonWindow commonWindow);
+        protected abstract void OnCloseWindow(int layer);
+        protected abstract void OnCloseWindowsInLayer(int layer);
+        protected abstract void OnCloseAllWindows();
+        protected abstract void OnOpenWindow(CommonWindow commonWindow, int layer);
 
         protected virtual void OnRaycastHit(GameObject go)
         {
@@ -75,7 +84,7 @@ namespace LittleBit.Modules.UI
                 window.Close();
                 window.OpenShop(context);
             }
-            OnOpenWindow(window);
+            OnOpenWindow(window,layer);
         }
         
         private void CloseOpeningWindowExceptWindow(CommonWindow currentShop, int layer)
