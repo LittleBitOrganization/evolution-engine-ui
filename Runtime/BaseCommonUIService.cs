@@ -13,21 +13,21 @@ namespace LittleBit.Modules.UI
             _windows = new Dictionary<int, List<CommonWindow>>();
         }
         
-        public void HideWindowsInLayer(int layer = 0)
+        public void CloseWindowsInLayer(int layer = 0)
         {
             foreach (var window in _windows[layer])
             {
-                window.Hide();
+                window.Close();
             }
         }
         
-        public void HideAllWindows()
+        public void CloseAllWindows()
         {
             foreach (var windowLayer in _windows)
             {
                 foreach (var window in windowLayer.Value)
                 {
-                    HideWindow(window);
+                    CloseWindow(window);
                 }
             }
         }
@@ -46,11 +46,11 @@ namespace LittleBit.Modules.UI
             _windows[layer].Add(shop);
             
             shop.OnOpen.AddListener(onOpen);
-            shop.OnHidden.AddListener(onClose);   
-            shop.OnHidden.AddListener(OnHiddenWindow);
+            shop.OnClose.AddListener(onClose);   
+            shop.OnClose.AddListener(OnCloseWindow);
         }
 
-        protected abstract void OnHiddenWindow();
+        protected abstract void OnCloseWindow();
         protected abstract void OnOpenWindow();
         protected virtual void OnRaycastHit(GameObject go)
         {
@@ -71,7 +71,7 @@ namespace LittleBit.Modules.UI
             }
             else
             {
-                window.Hide();
+                window.Close();
                 window.OpenShop(context);
             }
 
@@ -84,13 +84,13 @@ namespace LittleBit.Modules.UI
             {
                 if (window.IsOpen && window != currentShop)
                 {
-                    HideWindow(window);
+                    CloseWindow(window);
                 }
             }
         }
-        private void HideWindow(CommonWindow window)
+        private void CloseWindow(CommonWindow window)
         {
-            window.Hide();
+            window.Close();
         }
     }
 }
