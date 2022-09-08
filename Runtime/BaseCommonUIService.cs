@@ -17,6 +17,7 @@ namespace LittleBit.Modules.UI
         public BaseCommonUIService()
         {
             _windows = new Dictionary<int, List<CommonWindow>>();
+            _stackCommonWindowInLayer = new Dictionary<int, LStack<OpenWindowCommand>>();
         }
         
         protected void InitShop(CommonWindow shop, int layer, UnityAction onOpen ,UnityAction onClose)
