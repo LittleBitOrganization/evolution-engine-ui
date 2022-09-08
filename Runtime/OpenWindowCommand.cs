@@ -18,7 +18,7 @@
 
         internal void Open()
         {
-            _commonUIService.OpenWindow(_commonWindow.GetType(),_windowContext);
+            _commonWindow.OpenShop(_windowContext);
         }
 
         internal void Hide()
