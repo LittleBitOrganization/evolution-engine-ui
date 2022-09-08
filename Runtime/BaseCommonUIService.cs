@@ -108,5 +108,14 @@ namespace LittleBit.Modules.UI
             var openWindowCommand = _stackCommonWindowInLayer[layer].Last(v => v.CommonWindow == commonWindow);
             _stackCommonWindowInLayer[layer].Remove(openWindowCommand);
         }
+        
+        public void CloseWindowsInLayer(int layer)
+        {
+            foreach (var command in _stackCommonWindowInLayer[layer])
+            {
+                command.Hide();
+            }
+            _stackCommonWindowInLayer[layer].Clear();
+        }
     }
 }
