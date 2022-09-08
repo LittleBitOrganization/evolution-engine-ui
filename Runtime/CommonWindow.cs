@@ -1,4 +1,4 @@
-using UnityEngine.Events;
+using System;
 
 namespace LittleBit.Modules.UI
 {
@@ -6,19 +6,15 @@ namespace LittleBit.Modules.UI
     {
         public bool IsOpen { get; protected set; }
 
-        public UnityEvent OnOpen { get; private set; }
-        public UnityEvent OnClose { get; private set; }
-
+        public abstract event Action OnOpen;
+        public abstract event Action OnClose;
+        public abstract event Action OnHidden;
         
         public ShopTrigger WindowTrigger;
-
-        protected CommonWindow()
-        {
-            OnOpen = new UnityEvent();
-            OnClose = new UnityEvent();
-        }
+        
         
         public abstract void OpenShop(WindowContext windowContext);
         public abstract void Close();
+        public abstract void Hide();
     }
 }
