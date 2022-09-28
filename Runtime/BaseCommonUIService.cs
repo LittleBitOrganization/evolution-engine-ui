@@ -112,9 +112,10 @@ namespace LittleBit.Modules.UI
         
         public void CloseWindowsInLayer(int layer)
         {
-            foreach (var command in _stackCommonWindowInLayer[layer])
+            while (_stackCommonWindowInLayer[layer].Count > 0)
             {
-                command.Hide();
+                var command = _stackCommonWindowInLayer[layer].Peek();
+                CloseWindow(command.CommonWindow);
             }
             _stackCommonWindowInLayer[layer].Clear();
         }
