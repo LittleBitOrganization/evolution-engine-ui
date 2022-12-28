@@ -31,7 +31,7 @@ namespace LittleBit.Modules.UI.Factory
         private void ConstructUi()
         {
             _layout = _layoutBuilderService.BuildLayoutOfType<TTargetLayout>(_rootLayout, _layoutStyle);
-            _layout.GetComponentsInChildren<ICloseButtonLayout>().ToList().ForEach(b => b.AddOnClickListener(Close));
+            _layout.GetComponentsInChildren<ICloseButtonLayout>(true).ToList().ForEach(b => b.AddOnClickListener(Close));
 
             foreach (var layoutGroup in _layout.GetComponentsInChildren<LayoutGroup>())
             {
