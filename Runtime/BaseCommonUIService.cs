@@ -54,15 +54,16 @@ namespace LittleBit.Modules.UI
 
         protected virtual void OnRaycastHit(GameObject go)
         {
-            if (go.TryGetComponent(out ShopTrigger shopTrigger))
-            {
-                if(!shopTrigger.Interactable) return;
-            }
+            //Deprecated after version 1.3.3
+            // if (go.TryGetComponent(out IIntent shopTrigger))
+            // {
+            //     if(!shopTrigger.Interactable) return;
+            // }
         }
         
         protected virtual void OpenWindow(CommonWindow window, WindowContext context, int layer = 0)
         {
-            if (window.WindowTrigger == context.WindowTrigger && context.WindowTrigger != null) return;
+            if (window.Intent == context.Intent && context.Intent != null) return;
 
             HideOpeningWindow(layer);
             HideWindow(window);

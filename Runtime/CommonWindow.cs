@@ -10,7 +10,7 @@ namespace LittleBit.Modules.UI
         public abstract event Action OnClose;
         public abstract event Action OnHidden;
         
-        public ShopTrigger WindowTrigger;
+        public IIntent Intent;
         
         
         public abstract void OpenShop(WindowContext windowContext);
