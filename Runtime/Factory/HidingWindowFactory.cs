@@ -44,6 +44,7 @@ namespace LittleBit.Modules.UI.Factory
         public override void OpenShop(WindowContext windowContext)
         {
             IsOpen = true;
+            Intent = windowContext.Intent;
             Show(_layout);
             IContextLayout contextLayout = _layout.GetComponentInChildren<IContextLayout>();
             
@@ -56,6 +57,7 @@ namespace LittleBit.Modules.UI.Factory
         {
             CloseWindow();
             OnClose?.Invoke();
+            Intent = null;
         }
 
         public override void Hide()
